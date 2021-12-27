@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "./WrapERC721DataStorage.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import "./WrapERC721DataStorageUpgradeable.sol";
 
-abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Ownable{
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIdCounter;
+abstract contract WrapERC721Upgradeable is Initializable, ERC721Upgradeable, ERC721HolderUpgradeable, WrapERC721DataStorageUpgradeable, OwnableUpgradeable{
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _tokenIdCounter;
 
     address public relayer;
 
-    constructor(address _relayer) {
+    function __WrapERC721_init(address _relayer) internal onlyInitializing {
         setRelayer(_relayer);
     }
+
 
     modifier onlyRelayer() {
         require(msg.sender == relayer, "restricted function to relayer");
@@ -26,7 +28,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
     function tokenURI(uint256 tokenId)
         public
         view
-        override(ERC721, WrapERC721DataStorage)
+        override(ERC721Upgradeable, WrapERC721DataStorageUpgradeable)
         returns (string memory)
     {
         return super.tokenURI(tokenId);
@@ -40,7 +42,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
      * - this contract should be approved by the owner of the token
      */
     function _lock(address contAddr, uint256 tokenId, address from) internal {
-        ERC721 NFT = ERC721(contAddr);
+        IERC721Upgradeable NFT = IERC721Upgradeable(contAddr);
         NFT.safeTransferFrom(from, address(this), tokenId);
     }
 
@@ -52,7 +54,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
      * - only relayer can call this function.
      */
     function redeem(address contAddr, uint256 tokenId, address to) public onlyRelayer {
-        ERC721 NFT = ERC721(contAddr);
+        IERC721Upgradeable NFT = IERC721Upgradeable(contAddr);
         NFT.safeTransferFrom(address(this), to, tokenId);
     }
 
