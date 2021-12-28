@@ -96,12 +96,8 @@ abstract contract WrapERC721Upgradeable is Initializable, ERC721Upgradeable, ERC
 
     /**
      * @dev Set a new relayer to do cross chain transactions.
-     * 
-     * Requirements:
-     *
-     * - only owner can call this function.
      */
-    function setRelayer(address newRelayer) public onlyOwner {
+    function setRelayer(address newRelayer) internal {
         relayer = newRelayer;
     }
 }
