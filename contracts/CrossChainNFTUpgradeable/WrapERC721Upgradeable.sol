@@ -15,7 +15,7 @@ abstract contract WrapERC721Upgradeable is Initializable, ERC721Upgradeable, ERC
     address public relayer;
 
     function __WrapERC721_init(address _relayer) internal onlyInitializing {
-        setRelayer(_relayer);
+        relayer = _relayer;
     }
 
 
@@ -97,7 +97,7 @@ abstract contract WrapERC721Upgradeable is Initializable, ERC721Upgradeable, ERC
     /**
      * @dev Set a new relayer to do cross chain transactions.
      */
-    function setRelayer(address newRelayer) internal {
+    function setRelayer(address newRelayer) public onlyOwner {
         relayer = newRelayer;
     }
 }

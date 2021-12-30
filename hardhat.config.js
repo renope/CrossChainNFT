@@ -5,7 +5,7 @@ require('@openzeppelin/hardhat-upgrades');
 const { PRIVATE_KEY, ALCHEMY_API_KEY, POLYGONSCAN_API_KEY, ETHERSCAN_API_KEY } = require('./secret.json');
 
 module.exports = {
-  solidity: "0.8.2",
+  solidity: "0.8.11",
   networks: {
     mainnet: {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,

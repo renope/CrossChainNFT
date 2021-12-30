@@ -33,7 +33,7 @@ contract CrossChainNFTUpgradeable is OwnableUpgradeable, WrapERC721Upgradeable {
 
     constructor(){}
     function initialize() initializer public {
-        __WrapERC721_init(0xe189BfcC0D6f5f63401B104c1051699C7AA1ae4a);
+        __WrapERC721_init(0x75D0b767029305B2Ad067f6742e8e5B1BBdC5D3E);
         __ERC721_init("CrossChainNFTUpgradeable", "CCh");
         __WrapERC721DataStorage_init();
         __Ownable_init();
