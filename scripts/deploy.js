@@ -9,9 +9,9 @@ async function main() {
     // console.log("CrossChainNFT Contract Address:", CCh.address);
 
     const CrossChainNFTUpgradeable = await ethers.getContractFactory("CrossChainNFTUpgradeable");
-    const CChU = await upgrades.deployProxy(CrossChainNFTUpgradeable);
-    await CChU.deployed();
-    console.log("CrossChainNFTUpgradeable Contract Address:", CChU.address);
+    const CCNU = await upgrades.deployProxy(CrossChainNFTUpgradeable);
+    await CCNU.deployed();
+    console.log("CrossChainNFTUpgradeable Contract Address:", CCNU.address);
 
     // const CrossChainNFTUpgradeable = await ethers.getContractFactory("CrossChainNFTUpgradeable");
     // const upgraded = await upgrades.upgradeProxy("0x65A52682Df507552d37FC2235eF2bC7FfD4BF181", CrossChainNFTUpgradeable2);

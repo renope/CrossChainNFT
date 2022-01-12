@@ -37,7 +37,7 @@ abstract contract WrapERC721DataStorageUpgradeable is Initializable, ERC721Upgra
         return wrappedTokens[wTokenId].uri;
     }
 
-    function _setwTokendata(
+    function _setwTokenData(
         uint256 _wTokenId,
         uint256 _chainId,
         address _contAddr,
@@ -46,6 +46,19 @@ abstract contract WrapERC721DataStorageUpgradeable is Initializable, ERC721Upgra
     ) internal {
         wrappedTokens[_wTokenId] = WrappedToken(_chainId, _contAddr, _tokenId, _uri);
         emit TokenWrapped(_wTokenId);
+    }
+
+    function getwTokenData(uint256 wTokenId) public view returns(
+        uint256 chainId,
+        address contAddr,
+        uint256 tokenId,
+        string memory uri
+    ) {
+        WrappedToken memory wToken = wrappedTokens[wTokenId];
+        chainId = wToken.chainId;
+        contAddr = wToken.contAddr;
+        tokenId = wToken.tokenId;
+        uri = wToken.uri;
     }
 
     function _burnTokenData(uint256 _wTokenId) internal {

@@ -78,7 +78,7 @@ abstract contract WrapERC721Upgradeable is Initializable, ERC721Upgradeable, ERC
         wTokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, wTokenId);
-        _setwTokendata(wTokenId, chainId, contAddr, tokenId, uri);
+        _setwTokenData(wTokenId, chainId, contAddr, tokenId, uri);
     }
 
     /**
