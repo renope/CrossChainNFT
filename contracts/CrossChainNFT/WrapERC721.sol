@@ -17,6 +17,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
         setRelayer(_relayer);
     }
 
+
     modifier onlyRelayer() {
         require(msg.sender == relayer, "restricted function to relayer");
         _;
@@ -40,7 +41,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
      * - this contract should be approved by the owner of the token
      */
     function _lock(address contAddr, uint256 tokenId, address from) internal {
-        ERC721 NFT = ERC721(contAddr);
+        IERC721 NFT = IERC721(contAddr);
         NFT.safeTransferFrom(from, address(this), tokenId);
     }
 
@@ -52,7 +53,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
      * - only relayer can call this function.
      */
     function redeem(address contAddr, uint256 tokenId, address to) public onlyRelayer {
-        ERC721 NFT = ERC721(contAddr);
+        IERC721 NFT = IERC721(contAddr);
         NFT.safeTransferFrom(address(this), to, tokenId);
     }
 
@@ -76,7 +77,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
         wTokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, wTokenId);
-        _setwTokendata(wTokenId, chainId, contAddr, tokenId, uri);
+        _setwTokenData(wTokenId, chainId, contAddr, tokenId, uri);
     }
 
     /**
@@ -86,7 +87,7 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
      *
      * - caller should be owner or approved by the owner.
      */
-    function burnWrappedToken(uint256 wTokenId) public {
+    function _burnWrappedToken(uint256 wTokenId) internal {
         require(_isApprovedOrOwner(_msgSender(), wTokenId), "ERC721Burnable: caller is not owner nor approved");
         _burn(wTokenId);
         _burnTokenData(wTokenId);
@@ -94,10 +95,6 @@ abstract contract WrapERC721 is ERC721, ERC721Holder, WrapERC721DataStorage, Own
 
     /**
      * @dev Set a new relayer to do cross chain transactions.
-     * 
-     * Requirements:
-     *
-     * - only owner can call this function.
      */
     function setRelayer(address newRelayer) public onlyOwner {
         relayer = newRelayer;

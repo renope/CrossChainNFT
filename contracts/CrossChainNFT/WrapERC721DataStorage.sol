@@ -2,9 +2,10 @@
 pragma solidity ^0.8.2;
 
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-abstract contract WrapERC721DataStorage is ERC721 {
+abstract contract WrapERC721DataStorage is Initializable, ERC721 {
 
     struct WrappedToken {
         uint256 chainId;
@@ -27,7 +28,7 @@ abstract contract WrapERC721DataStorage is ERC721 {
         return wrappedTokens[wTokenId].uri;
     }
 
-    function _setwTokendata(
+    function _setwTokenData(
         uint256 _wTokenId,
         uint256 _chainId,
         address _contAddr,
@@ -36,6 +37,19 @@ abstract contract WrapERC721DataStorage is ERC721 {
     ) internal {
         wrappedTokens[_wTokenId] = WrappedToken(_chainId, _contAddr, _tokenId, _uri);
         emit TokenWrapped(_wTokenId);
+    }
+
+    function getLockedTokenData(uint256 wTokenId) public view returns(
+        uint256 chainId,
+        address contAddr,
+        uint256 tokenId,
+        string memory uri
+    ) {
+        WrappedToken memory wToken = wrappedTokens[wTokenId];
+        chainId = wToken.chainId;
+        contAddr = wToken.contAddr;
+        tokenId = wToken.tokenId;
+        uri = wToken.uri;
     }
 
     function _burnTokenData(uint256 _wTokenId) internal {

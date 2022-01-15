@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
+
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./WrapERC721.sol";
+import "../financial/IPayment.sol";
 
 contract CrossChainNFT is Ownable, WrapERC721 {
+
+    function version() public pure returns(string memory) {
+        return "1.0.0";
+    }
+
+    IPayment payment;
 
     /**
      * @dev Emitted to request the relayer to mint a wToken owned by `to` on `targetChainId`.
@@ -29,7 +38,32 @@ contract CrossChainNFT is Ownable, WrapERC721 {
         address to
     );
 
-    constructor() WrapERC721(0xe189BfcC0D6f5f63401B104c1051699C7AA1ae4a) ERC721("CrossChainNFT", "CCh") {}
+
+    constructor() 
+        WrapERC721(0x75D0b767029305B2Ad067f6742e8e5B1BBdC5D3E)
+        ERC721("Cross-Chain-NFT", "CCN")
+    {
+        payment = IPayment(address(0));
+    }
+    
+
+
+    function transferCrossChainRequest(
+        address contAddr,
+        uint256 tokenId,
+        address from,
+        address to,
+        uint256 targetChainId
+    ) public payable {
+        transferCrossChainRequest(
+            contAddr,
+            tokenId,
+            from,
+            to,
+            targetChainId,
+            ""
+        );
+    }
 
     /**
      * @dev Lock the `tokenId` from `from` in this contract. `targetChainId` and transfer to `to`.
@@ -54,9 +88,12 @@ contract CrossChainNFT is Ownable, WrapERC721 {
         uint256 tokenId,
         address from,
         address to,
-        uint256 targetChainId
+        uint256 targetChainId,
+        bytes memory data
     ) public payable {
-        require(msg.value >= getFee(targetChainId));
+
+        payment.payFee{value : msg.value}(targetChainId, data);
+
         _lock(contAddr, tokenId, from);
         uint256 chainId;
         assembly {chainId := chainid()}
@@ -80,78 +117,21 @@ contract CrossChainNFT is Ownable, WrapERC721 {
      * Emits a {RelayerCallRedeem} event.
      * the relayer uses this event to redeem the collateral token on the other chainId.
      */
-    function wReturnCrossChainRequest(
+    function requestReleaseLockedToken(
         uint256 wTokenId,
-        address to
+        address to,
+        bytes memory data
     ) public payable {
         WrappedToken memory wToken = wrappedTokens[wTokenId];
-        require(msg.value >= getFee(wToken.chainId), "insufficient fee");
+
+        payment.payFee{value : msg.value}(wToken.chainId, data);
 
         uint256 chainId = wToken.chainId;
         address contAddr = wToken.contAddr;
         uint256 tokenId = wToken.tokenId;
 
-        burnWrappedToken(wTokenId);
+        _burnWrappedToken(wTokenId);
 
         emit RelayerCallRedeem(chainId, contAddr, tokenId, to);
-    }
-
-
-    /**
-     * @dev assigns the fee needed to the corresponding chain id.
-     */
-    mapping (uint256 => uint256) currentFee;
-
-    /**
-     * @dev Returns the fee needed to transfer a token to the `targetChainId`.
-     *
-     * Requirements:
-     *
-     * - `targetChainId` should be supported by this contract.
-     */
-    function getFee(uint256 targetChainId) public view returns(uint256 fee) {
-        // require(currentFee[targetChainId] != 0, "targetChainId not supported");
-        fee = currentFee[targetChainId];
-    }
-
-    /**
-     * @dev Sets the fee needed to transfer a token to the `targetChainId`.
-     *
-     * Requirements:
-     *
-     * - only owner can call this function.
-     */
-    function setFee(uint256 targetChainId, uint256 fee) public onlyOwner {
-        currentFee[targetChainId] = fee;
-    }
-
-    /**
-     * @dev multiple transaction version of `setFee()`.
-     */
-    function setFees(uint256[] memory targetChainIds, uint256[] memory fees) public onlyOwner {
-        require(targetChainIds.length == fees.length, "arrays are not in the same lenght");
-        for(uint256 index = 0; index <= targetChainIds.length; index++){
-            setFee(targetChainIds[index], fees[index]);
-        }
-    }
-
-
-
-    /**
-     * @dev Returns Eth supply of the contract
-     */
-    function totalSupply() public view returns(uint256){
-        return address(this).balance;
-    }
-
-    /**
-     * @dev Withdraw Eth paid by users.
-     *
-     * Requirements:
-     *
-     * - only owner can call this function.
-     */
-    function withdrawCash(address payable to) external onlyOwner {
-        to.transfer(totalSupply());
     }
 }
