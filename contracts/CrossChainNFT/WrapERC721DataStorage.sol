@@ -2,10 +2,14 @@
 pragma solidity ^0.8.2;
 
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-abstract contract WrapERC721DataStorage is Initializable, ERC721 {
+
+/**
+ * @dev Every wToken is representing a real NFT which holds its data in this contract. 
+ * when a wToken mints, its data sets and when a wToken burns its data will be burned too.
+ */
+abstract contract WrapERC721DataStorage is ERC721 {
 
     struct WrappedToken {
         uint256 chainId;
@@ -16,12 +20,18 @@ abstract contract WrapERC721DataStorage is Initializable, ERC721 {
 
     mapping(uint256 => WrappedToken) wrappedTokens;
 
-    event TokenWrapped(uint256 wTokenId);
-    event WTokenBurned(uint256 wTokenId);
+
+    event TokenData(
+        uint256 wTokenId,
+        uint256 chainId,
+        address contAddr,
+        uint256 tokenId,
+        string uri
+    );
 
 
     /**
-     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
+     * @dev wTokens returns the uri of real NFTs representing.
      */
     function tokenURI(uint256 wTokenId) public view virtual override returns (string memory){
         require(_exists(wTokenId), "ERC721Metadata: URI query for nonexistent token");
@@ -36,24 +46,10 @@ abstract contract WrapERC721DataStorage is Initializable, ERC721 {
         string memory _uri
     ) internal {
         wrappedTokens[_wTokenId] = WrappedToken(_chainId, _contAddr, _tokenId, _uri);
-        emit TokenWrapped(_wTokenId);
-    }
-
-    function getLockedTokenData(uint256 wTokenId) public view returns(
-        uint256 chainId,
-        address contAddr,
-        uint256 tokenId,
-        string memory uri
-    ) {
-        WrappedToken memory wToken = wrappedTokens[wTokenId];
-        chainId = wToken.chainId;
-        contAddr = wToken.contAddr;
-        tokenId = wToken.tokenId;
-        uri = wToken.uri;
+        emit TokenData(_wTokenId, _chainId, _contAddr, _tokenId, _uri);
     }
 
     function _burnTokenData(uint256 _wTokenId) internal {
         delete wrappedTokens[_wTokenId];
-        emit WTokenBurned(_wTokenId);
     }
 }

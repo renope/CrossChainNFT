@@ -61,9 +61,33 @@
           "internalType": "uint256",
           "name": "wTokenId",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "chainId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "contAddr",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "uri",
+          "type": "string"
         }
       ],
-      "name": "TokenWrapped",
+      "name": "TokenData",
       "type": "event"
     },
     {
@@ -89,19 +113,6 @@
         }
       ],
       "name": "Transfer",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "wTokenId",
-          "type": "uint256"
-        }
-      ],
-      "name": "WTokenBurned",
       "type": "event"
     },
     {

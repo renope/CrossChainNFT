@@ -2,19 +2,13 @@
 pragma solidity ^0.8.2;
 
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./WrapERC721.sol";
-import "../financial/IPayment.sol";
+import "../implementation/CrossChainImplementationInterface.sol";
 
-contract CrossChainNFT is Ownable, WrapERC721 {
-
-    function version() public pure returns(string memory) {
-        return "1.0.0";
-    }
-
-    IPayment payment;
+contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
 
     /**
      * @dev Emitted to request the relayer to mint a wToken owned by `to` on `targetChainId`.
@@ -29,13 +23,13 @@ contract CrossChainNFT is Ownable, WrapERC721 {
     );
 
     /**
-     * @dev Emitted to request the relayer to redeem the collateral token and transfer it to `to`.
+     * @dev Emitted to request the relayer to redeem the locked token and transfer it to `to`.
      */
     event RelayerCallRedeem(
         uint256 chainId,
         address contAddr,
-        uint256 tokenId,
-        address to
+        address to,
+        uint256 tokenId
     );
 
 
@@ -43,24 +37,53 @@ contract CrossChainNFT is Ownable, WrapERC721 {
         WrapERC721(0x75D0b767029305B2Ad067f6742e8e5B1BBdC5D3E)
         ERC721("Cross-Chain-NFT", "CCN")
     {
-        payment = IPayment(address(0));
+        implementation = CrossChainImplementationInterface(0x72753D08D630B4190a561c821Ad965161e2A5d6E); //implementation address on avalancheFujiTestnet
     }
-    
+
+    CrossChainImplementationInterface implementation;
+
+    function newImplementation(address addr) public onlyOwner {
+        implementation = CrossChainImplementationInterface(addr);
+    }
 
 
-    function transferCrossChainRequest(
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+
+    function requestTransferCrossChain(
         address contAddr,
-        uint256 tokenId,
         address from,
+        uint256 targetChainId,
         address to,
-        uint256 targetChainId
+        uint256 tokenId,
+        uint256 dappId
     ) public payable {
-        transferCrossChainRequest(
+        requestTransferCrossChain(
             contAddr,
-            tokenId,
             from,
-            to,
             targetChainId,
+            to,
+            tokenId,
+            dappId,
+            ""
+        );
+    }
+
+    function requestReleaseLockedToken(
+        uint256 wTokenId,
+        address to,
+        uint256 dappId
+    ) public payable {
+        requestReleaseLockedToken(
+            wTokenId,
+            to,
+            dappId,
             ""
         );
     }
@@ -71,7 +94,7 @@ contract CrossChainNFT is Ownable, WrapERC721 {
      *  WARNING:
      * 
      * - if `to` on `targetChainId` does not exist, token would be transfered back to `from` address.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     * - If `to` refers to a smart contract, it must implementation {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
      * 
      * Requirements:
      *
@@ -83,27 +106,41 @@ contract CrossChainNFT is Ownable, WrapERC721 {
      * Emits a {RelayerCallSafeMintWrappedToken} event.
      * the relayer uses this event to mint a wToken on the `targetChainId`.
      */
-    function transferCrossChainRequest(
+    function requestTransferCrossChain(
         address contAddr,
-        uint256 tokenId,
         address from,
-        address to,
         uint256 targetChainId,
+        address to,
+        uint256 tokenId,
+        uint256 dappId,
         bytes memory data
-    ) public payable {
+    ) public payable whenNotPaused {
 
-        payment.payFee{value : msg.value}(targetChainId, data);
+        _lock(contAddr, from, tokenId);
 
-        _lock(contAddr, tokenId, from);
         uint256 chainId;
         assembly {chainId := chainid()}
+
+        string memory uri = IERC721Metadata(contAddr).tokenURI(tokenId);
+
+        implementation.requestTransferCrossChain{value : msg.value}(
+            targetChainId,
+            to,
+            chainId,
+            contAddr,
+            tokenId,
+            uri,
+            dappId,
+            data
+        );
+
         emit RelayerCallSafeMintWrappedToken(
             targetChainId,
             to,
             chainId,
             contAddr,
             tokenId,
-            IERC721Metadata(contAddr).tokenURI(tokenId)
+            uri
         );
     }
 
@@ -120,11 +157,10 @@ contract CrossChainNFT is Ownable, WrapERC721 {
     function requestReleaseLockedToken(
         uint256 wTokenId,
         address to,
+        uint256 dappId,
         bytes memory data
     ) public payable {
         WrappedToken memory wToken = wrappedTokens[wTokenId];
-
-        payment.payFee{value : msg.value}(wToken.chainId, data);
 
         uint256 chainId = wToken.chainId;
         address contAddr = wToken.contAddr;
@@ -132,6 +168,32 @@ contract CrossChainNFT is Ownable, WrapERC721 {
 
         _burnWrappedToken(wTokenId);
 
-        emit RelayerCallRedeem(chainId, contAddr, tokenId, to);
+        implementation.requestReleaseLockedToken{value : msg.value}(
+            chainId,
+            contAddr,
+            to,
+            tokenId,
+            dappId,
+            data
+        );
+
+        emit RelayerCallRedeem(chainId, contAddr, to, tokenId);
+    }
+    
+
+    /**
+     * @dev Returns the data of wTokenId.
+     */
+    function getLockedTokenData(uint256 wTokenId) public view returns(
+        uint256 chainId,
+        address contAddr,
+        uint256 tokenId,
+        uint256 releaseGasFee
+    ) {
+        WrappedToken memory wToken = wrappedTokens[wTokenId];
+        chainId = wToken.chainId;
+        contAddr = wToken.contAddr;
+        tokenId = wToken.tokenId;
+        releaseGasFee = implementation.redeemFee(chainId);
     }
 }
