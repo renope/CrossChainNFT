@@ -25,7 +25,7 @@ contract Payment is PaymentData {
      * - `targetChainId` should be supported by this contract.
      */
     function _redeemFee(uint256 targetChainId) internal view returns(uint256 fee) {
-        return feeRatio * mintGas * gasPrice(targetChainId) * price(targetChainId) / 10 ** 8;
+        return feeRatio * mintGas * gasPrice(targetChainId) * price(targetChainId) / 10 ** 18;
     }
 
 

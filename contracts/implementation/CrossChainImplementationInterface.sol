@@ -10,8 +10,7 @@ interface CrossChainImplementationInterface {
         address contAddr,
         uint256 tokenId,
         string memory uri,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) external payable;
 
     function requestReleaseLockedToken(
@@ -19,8 +18,7 @@ interface CrossChainImplementationInterface {
         address contAddr,
         address to,
         uint256 tokenId,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) external payable;
 
     function mintFee(uint256 targetChainId) external view returns(uint256);

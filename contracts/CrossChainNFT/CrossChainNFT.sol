@@ -6,45 +6,12 @@ import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./WrapERC721.sol";
-import "../implementation/CrossChainImplementationInterface.sol";
 
 contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
 
-    /**
-     * @dev Emitted to request the relayer to mint a wToken owned by `to` on `targetChainId`.
-     */
-    event RelayerCallSafeMintWrappedToken(
-        uint256 targetChainId,
-        address to,
-        uint256 chainId,
-        address contAddr,
-        uint256 tokenId,
-        string uri
-    );
-
-    /**
-     * @dev Emitted to request the relayer to redeem the locked token and transfer it to `to`.
-     */
-    event RelayerCallRedeem(
-        uint256 chainId,
-        address contAddr,
-        address to,
-        uint256 tokenId
-    );
-
-
     constructor() 
-        WrapERC721(0x75D0b767029305B2Ad067f6742e8e5B1BBdC5D3E)
         ERC721("Cross-Chain-NFT", "CCN")
-    {
-        implementation = CrossChainImplementationInterface(0x72753D08D630B4190a561c821Ad965161e2A5d6E); //implementation address on avalancheFujiTestnet
-    }
-
-    CrossChainImplementationInterface implementation;
-
-    function newImplementation(address addr) public onlyOwner {
-        implementation = CrossChainImplementationInterface(addr);
-    }
+    {}
 
 
     function pause() public onlyOwner {
@@ -55,38 +22,6 @@ contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
         _unpause();
     }
 
-
-    function requestTransferCrossChain(
-        address contAddr,
-        address from,
-        uint256 targetChainId,
-        address to,
-        uint256 tokenId,
-        uint256 dappId
-    ) public payable {
-        requestTransferCrossChain(
-            contAddr,
-            from,
-            targetChainId,
-            to,
-            tokenId,
-            dappId,
-            ""
-        );
-    }
-
-    function requestReleaseLockedToken(
-        uint256 wTokenId,
-        address to,
-        uint256 dappId
-    ) public payable {
-        requestReleaseLockedToken(
-            wTokenId,
-            to,
-            dappId,
-            ""
-        );
-    }
 
     /**
      * @dev Lock the `tokenId` from `from` in this contract. `targetChainId` and transfer to `to`.
@@ -112,8 +47,7 @@ contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
         uint256 targetChainId,
         address to,
         uint256 tokenId,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) public payable whenNotPaused {
 
         _lock(contAddr, from, tokenId);
@@ -130,17 +64,7 @@ contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
             contAddr,
             tokenId,
             uri,
-            dappId,
-            data
-        );
-
-        emit RelayerCallSafeMintWrappedToken(
-            targetChainId,
-            to,
-            chainId,
-            contAddr,
-            tokenId,
-            uri
+            dappAddr
         );
     }
 
@@ -157,8 +81,7 @@ contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
     function requestReleaseLockedToken(
         uint256 wTokenId,
         address to,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) public payable {
         WrappedToken memory wToken = wrappedTokens[wTokenId];
 
@@ -173,13 +96,14 @@ contract CrossChainNFT is Ownable, Pausable, WrapERC721 {
             contAddr,
             to,
             tokenId,
-            dappId,
-            data
+            dappAddr
         );
-
-        emit RelayerCallRedeem(chainId, contAddr, to, tokenId);
     }
     
+
+    function mintFee(uint256 targetChainId) public view returns(uint256){
+        return implementation.mintFee(targetChainId);
+    }
 
     /**
      * @dev Returns the data of wTokenId.

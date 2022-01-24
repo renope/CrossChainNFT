@@ -13,8 +13,8 @@ abstract contract RinkebyPriceConsumer {
 
 
     constructor() {
-        _setAggregator(4, 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e); // mumbai MATICUSD(80001)
-        _setAggregator(80001, 0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676); // rinkeby ETHUSD(4)
+        _setAggregator(80001, 0x7794ee502922e2b723432DDD852B3C30A911F021); // mumbai MATICUSD(80001)
+        _setAggregator(4, 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e); // rinkeby ETHUSD(4)
         _setPriceUSD(43113, 88.26 * 10 ** 8); // fuji AVAXUSD(43113)
     }
 
@@ -29,7 +29,7 @@ abstract contract RinkebyPriceConsumer {
         require(_priceUSD(targetChainId) != 0, "chain Id not supported");
         uint256 currentChainId;
         assembly {currentChainId := chainid()}
-        return uint256(_priceUSD(targetChainId) / _priceUSD(currentChainId) * 10 ** 8);
+        return uint256(_priceUSD(targetChainId) * 10 ** 18 / _priceUSD(currentChainId));
     }
 
     function _priceUSD(uint256 chainId) internal view returns(int256) {

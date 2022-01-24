@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./WrapERC721DataStorage.sol";
+import "../implementation/CrossChainImplementationInterface.sol";
+
 
 
 /**
@@ -17,23 +19,22 @@ abstract contract WrapERC721 is ERC721Holder, WrapERC721DataStorage, Ownable{
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIdCounter;
 
-    address public relayer;
-
-    constructor(address _relayer) {
-        setRelayer(_relayer);
-    }
+    address public implementationAddr;
+    CrossChainImplementationInterface implementation;
 
     /**
-     * @dev Set a new relayer to do cross chain transactions.
+     * @dev Set a new implementationAddr to do cross chain transactions.
      */
-    function setRelayer(address newRelayer) public onlyOwner {
-        relayer = newRelayer;
+    function setImplementation(address _implementationAddr) public onlyOwner {
+        implementationAddr = _implementationAddr;
+        implementation = CrossChainImplementationInterface(_implementationAddr); //implementation address
     }
 
-    modifier onlyRelayer() {
-        require(msg.sender == relayer, "restricted function to relayer");
+    modifier onlyImplementation() {
+        require(msg.sender == implementationAddr, "restricted function to implementationAddr");
         _;
     }
+
 
     /**
      * @dev Lock the `tokenId` of `contAddr` in this contract.
@@ -52,9 +53,9 @@ abstract contract WrapERC721 is ERC721Holder, WrapERC721DataStorage, Ownable{
      * 
      * Requirements:
      *
-     * - only relayer can call this function.
+     * - only implementationAddr can call this function.
      */
-    function redeem(address contAddr, address to, uint256 tokenId) public onlyRelayer {
+    function redeem(address contAddr, address to, uint256 tokenId) public onlyImplementation {
         IERC721 NFT = IERC721(contAddr);
         NFT.safeTransferFrom(address(this), to, tokenId);
     }
@@ -67,7 +68,7 @@ abstract contract WrapERC721 is ERC721Holder, WrapERC721DataStorage, Ownable{
      * 
      * Requirements:
      *
-     * - only relayer can call this function.
+     * - only implementationAddr can call this function.
      */
     function safeMintWrappedToken(
         uint256 chainId,
@@ -75,7 +76,7 @@ abstract contract WrapERC721 is ERC721Holder, WrapERC721DataStorage, Ownable{
         address to,
         uint256 tokenId,
         string memory uri
-    ) public onlyRelayer returns(uint256 wTokenId) {
+    ) public onlyImplementation returns(uint256 wTokenId) {
         wTokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, wTokenId);

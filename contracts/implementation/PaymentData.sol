@@ -7,8 +7,8 @@ pragma solidity ^0.8.2;
 // import "./ChainLinkPriceFeed/mainnet/BinancePriceConsumer.sol";
 // import "./ChainLinkPriceFeed/mainnet/MaticPriceConsumer.sol";
 // import "./ChainLinkPriceFeed/mainnet/AvalanchePriceConsumer.sol";
-// import "./ChainLinkPriceFeed/testnet/RinkebyPriceConsumer.sol";
-import "./ChainLinkPriceFeed/testnet/MumbaiPriceConsumer.sol";
+import "./ChainLinkPriceFeed/testnet/RinkebyPriceConsumer.sol";
+// import "./ChainLinkPriceFeed/testnet/MumbaiPriceConsumer.sol";
 // import "./ChainLinkPriceFeed/testnet/FujiPriceConsumer.sol";
 import "./GasPriceConsumer.sol";
 
@@ -19,8 +19,8 @@ contract PaymentData is GasPriceConsumer, Ownable,
 // EthereumPriceConsumer
 // BinancePriceConsumer
 // MaticPriceConsumer
-// RinkebyPriceConsumer
-MumbaiPriceConsumer
+RinkebyPriceConsumer
+// MumbaiPriceConsumer
 // FujiPriceConsumer
 {
 
@@ -28,8 +28,8 @@ MumbaiPriceConsumer
     constructor()  {
         _setDappPercent(10);
         _setFeeRatio(2);
-        _setMintGas(59536); //not tested
-        _setRedeemGas(59536); //not tested
+        _setMintGas(260000); //not tested
+        _setRedeemGas(260000); //not tested
     }
 
 
@@ -48,10 +48,11 @@ MumbaiPriceConsumer
     ) public onlyOwner {
         require(aggregatorChainIds.length == aggregatorAddresses.length, "aggregator arrays are not same length.");
         require(coinChainIds.length == coinPricesUSD.length, "coin price arrays are not same length.");
-        _setMintGas(_mintGas);
-        _setRedeemGas(_redeemGas);
-        _setFeeRatio(_feeRatio);
-        _setDappPercent(_dappPercent);
+        
+        if(_mintGas != 0){_setMintGas(_mintGas);}
+        if(_redeemGas != 0){_setRedeemGas(_redeemGas);}
+        if(_feeRatio != 0){_setFeeRatio(_feeRatio);}
+        if(_dappPercent != 0){_setDappPercent(_dappPercent);}
 
         for(uint256 i = 0; i < aggregatorChainIds.length; i++){
             _setAggregator(aggregatorChainIds[i], aggregatorAddresses[i]);

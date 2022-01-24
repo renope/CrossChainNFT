@@ -2,6 +2,7 @@
 pragma solidity ^0.8.2;
 
 import "./CrossChainImplementationInterface.sol";
+import "../CrossChainNFT/MintRedeemInterface.sol";
 import "./Payment.sol";
 
 contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
@@ -10,7 +11,35 @@ contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
         return "0.2.0";
     }
 
-    constructor(){}
+    MintRedeemInterface crossChain;
+
+    
+    /**
+     * @dev Emitted to request the relayer to mint a wToken owned by `to` on `targetChainId`.
+     */
+    event RelayerCallSafeMintWrappedToken(
+        uint256 targetChainId,
+        address to,
+        uint256 chainId,
+        address contAddr,
+        uint256 tokenId,
+        string uri
+    );
+
+    /**
+     * @dev Emitted to request the relayer to redeem the locked token and transfer it to `to`.
+     */
+    event RelayerCallRedeem(
+        uint256 chainId,
+        address contAddr,
+        address to,
+        uint256 tokenId
+    );
+
+
+    constructor(){
+        crossChain = MintRedeemInterface(0x64DfA1B8A8392E3c93f6Df96b5EbB01A1bB13e94);
+    }
 
     function mintFee(uint256 targetChainId) public view returns(uint256){
         return _mintFee(targetChainId);
@@ -28,10 +57,18 @@ contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
         address contAddr,
         uint256 tokenId,
         string memory uri,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) public payable {
-        _payMintFee(msg.value, targetChainId, dappId);
+        _payMintFee(msg.value, targetChainId, dappAddr);
+
+        emit RelayerCallSafeMintWrappedToken(
+            targetChainId,
+            to,
+            chainId,
+            contAddr,
+            tokenId,
+            uri
+        );
     }
 
     function requestReleaseLockedToken(
@@ -39,9 +76,24 @@ contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
         address contAddr,
         address to,
         uint256 tokenId,
-        uint256 dappId,
-        bytes memory data
+        address dappAddr
     ) public payable{
-        _payRedeemFee(msg.value, chainId, dappId);
+        _payRedeemFee(msg.value, chainId, dappAddr);
+        emit RelayerCallRedeem(chainId, contAddr, to, tokenId);
+    }
+
+    function redeem(address contAddr, address to, uint256 tokenId) public onlyOwner {
+        crossChain.redeem(contAddr, to, tokenId);
+    }
+
+
+    function safeMintWrappedToken(
+        uint256 chainId,
+        address contAddr,
+        address to,
+        uint256 tokenId,
+        string memory uri
+    ) public onlyOwner {
+        crossChain.safeMintWrappedToken(chainId, contAddr, to, tokenId, uri);
     }
 }

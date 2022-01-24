@@ -25,7 +25,7 @@ abstract contract MaticPriceConsumer {
         require(_priceUSD(targetChainId) != 0, "chain Id not supported");
         uint256 currentChainId;
         assembly {currentChainId := chainid()}
-        return uint256(_priceUSD(targetChainId) / _priceUSD(currentChainId) * 10 ** 8);
+        return uint256(_priceUSD(targetChainId) * 10 ** 18 / _priceUSD(currentChainId));
     }
 
     function _priceUSD(uint256 chainId) internal view returns(int256) {
