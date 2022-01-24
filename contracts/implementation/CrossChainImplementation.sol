@@ -7,7 +7,7 @@ import "./Payment.sol";
 contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
 
     function version() public pure returns(string memory) {
-        return "1.0.0";
+        return "0.2.0";
     }
 
     constructor(){}
