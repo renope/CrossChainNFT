@@ -37,11 +37,11 @@ contract Payment is PaymentData {
      *
      * - value should be more than minimum value needed to mint a wToken.
      */
-    function _payMintFee(uint256 value, uint256 targetChainId, uint256 dappId) internal {
+    function _payMintFee(uint256 value, uint256 targetChainId, address dappAddr) internal {
         uint256 minValue = _mintFee(targetChainId) * 90/100;
         require(value >= minValue, "insufficient fee");
         payable(owner()).transfer(minValue);
-        dapps[dappId].transfer(value - minValue);
+        payable(dappAddr).transfer(value - minValue);
     }
 
 
@@ -53,10 +53,10 @@ contract Payment is PaymentData {
      *
      * - value should be more than minimum value needed to redeem a token.
      */
-    function _payRedeemFee(uint256 value, uint256 targetChainId, uint256 dappId) internal {
+    function _payRedeemFee(uint256 value, uint256 targetChainId, address dappAddr) internal {
         uint256 minValue = _redeemFee(targetChainId) * 90/100;
         require(value >= minValue, "insufficient fee");
         payable(owner()).transfer(minValue);
-        dapps[dappId].transfer(value - minValue);
+        payable(dappAddr).transfer(value - minValue);
     }
 }
