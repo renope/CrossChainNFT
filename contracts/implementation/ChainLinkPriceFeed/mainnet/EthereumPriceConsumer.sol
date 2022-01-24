@@ -7,7 +7,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorInterface.sol";
 // addresses special for Ethereum Mainnet 
 abstract contract EthereumPriceConsumer {
 
-    constructor() {
+    function __priceConsumer_init() internal {
         _setAggregator(1, 0xF9680D99D6C9589e2a93a78A04A279e509205945); // ETHUSD(1)
         _setAggregator(56, 0x14e613AC84a31f709eadbdF89C6CC390fDc9540A); // BNBUSD(56)
         _setAggregator(137, 0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676); // MATICUSD(137)
