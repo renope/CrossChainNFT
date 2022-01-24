@@ -12,11 +12,10 @@ import "./ChainLinkPriceFeed/testnet/MumbaiPriceConsumer.sol";
 // import "./ChainLinkPriceFeed/testnet/FujiPriceConsumer.sol";
 import "./GasPriceConsumer.sol";
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract PaymentData is GasPriceConsumer, Initializable, OwnableUpgradeable,
+contract PaymentData is GasPriceConsumer, Ownable,
 // EthereumPriceConsumer
 // BinancePriceConsumer
 // MaticPriceConsumer
@@ -26,7 +25,7 @@ MumbaiPriceConsumer
 {
 
 
-    function __PaymentData_init() internal onlyInitializing  {
+    constructor()  {
         _setDappPercent(10);
         _setFeeRatio(2);
         _setMintGas(59536); //not tested

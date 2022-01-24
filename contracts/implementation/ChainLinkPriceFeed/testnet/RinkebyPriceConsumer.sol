@@ -12,7 +12,7 @@ abstract contract RinkebyPriceConsumer {
     // MATICUSD(137) = 0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676;
 
 
-    function __priceConsumer_init() internal {
+    constructor() {
         _setAggregator(4, 0x8A753747A1Fa494EC906cE90E9f37563A8AF630e); // mumbai MATICUSD(80001)
         _setAggregator(80001, 0x7bAC85A8a13A4BcD8abb3eB7d6b4d632c5a57676); // rinkeby ETHUSD(4)
         _setPriceUSD(43113, 88.26 * 10 ** 8); // fuji AVAXUSD(43113)

@@ -7,7 +7,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorInterface.sol";
 //addresses special for Polygon Mainnet
 abstract contract MaticPriceConsumer {
 
-    function __priceConsumer_init() internal {
+    constructor() {
         _setAggregator(1, 0xF9680D99D6C9589e2a93a78A04A279e509205945); // ETHUSD(1)
         _setAggregator(56, 0x82a6c4AF830caa6c97bb504425f6A66165C2c26e); // BNBUSD(56)
         _setAggregator(137, 0xAB594600376Ec9fD91F8e885dADF0CE036862dE0); // MATICUSD(137)

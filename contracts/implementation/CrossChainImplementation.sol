@@ -1,22 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CrossChainImplementationInterface.sol";
 import "./Payment.sol";
 
-contract CrossChainImplementation is Initializable, CrossChainImplementationInterface, Payment{
+contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
 
     function version() public pure returns(string memory) {
         return "1.0.0";
     }
 
-    function initialize() initializer public {
-        __Ownable_init();
-        __PaymentData_init();
-        __priceConsumer_init();
-        __gasPriceConsumer_init();
-    }
+    constructor(){}
 
     function mintFee(uint256 targetChainId) public view returns(uint256){
         return _mintFee(targetChainId);
