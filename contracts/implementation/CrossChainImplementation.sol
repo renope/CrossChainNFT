@@ -38,7 +38,7 @@ contract CrossChainImplementation is CrossChainImplementationInterface, Payment{
 
 
     constructor(){
-        crossChain = MintRedeemInterface(0x64DfA1B8A8392E3c93f6Df96b5EbB01A1bB13e94);
+        crossChain = MintRedeemInterface(0x16539214c06b69b3bc4c2613cFE8a6BCf6d2A4aC); //CrossChainNFT on Fuji
     }
 
     function mintFee(uint256 targetChainId) public view returns(uint256){

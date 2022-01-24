@@ -7,21 +7,21 @@ pragma solidity ^0.8.2;
 // import "./ChainLinkPriceFeed/mainnet/BinancePriceConsumer.sol";
 // import "./ChainLinkPriceFeed/mainnet/MaticPriceConsumer.sol";
 // import "./ChainLinkPriceFeed/mainnet/AvalanchePriceConsumer.sol";
-import "./ChainLinkPriceFeed/testnet/RinkebyPriceConsumer.sol";
+// import "./ChainLinkPriceFeed/testnet/RinkebyPriceConsumer.sol";
 // import "./ChainLinkPriceFeed/testnet/MumbaiPriceConsumer.sol";
-// import "./ChainLinkPriceFeed/testnet/FujiPriceConsumer.sol";
+import "./ChainLinkPriceFeed/testnet/FujiPriceConsumer.sol";
 import "./GasPriceConsumer.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
 contract PaymentData is GasPriceConsumer, Ownable,
-// EthereumPriceConsumer
-// BinancePriceConsumer
-// MaticPriceConsumer
-RinkebyPriceConsumer
-// MumbaiPriceConsumer
-// FujiPriceConsumer
+    // EthereumPriceConsumer
+    // BinancePriceConsumer
+    // MaticPriceConsumer
+    // RinkebyPriceConsumer
+    // MumbaiPriceConsumer
+    FujiPriceConsumer
 {
 
 
